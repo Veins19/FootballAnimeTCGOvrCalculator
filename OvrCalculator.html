@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVR Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { max-width: 600px; margin: auto; }
+        .card-list { margin-top: 20px; }
+	.remove-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 12px;
+    cursor: pointer;
+	}
+        .card { border: 1px solid #ccc; padding: 10px; margin: 5px; position: relative; }
+        .button { padding: 10px; margin: 5px; cursor: pointer; }
+        .synergy-box { position: absolute; top: 5px; right: 5px; background: lightblue; padding: 3px; border-radius: 5px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Football Anime TCG OVR Calculator</h1>
+	<h4>Note: </h4>
+	<h4>1. If the card is merged ex: 91(+6), just write 97 in ovr box. </h4>
+	<h4>2. Ignore Limit break checkbox tbh, if you have limit broken your card to +18, just put it in the ovr box.</h4>
+        <form id="cardForm">
+            <input type="text" id="name" placeholder="Card Name" required>
+            <input type="number" id="ovr" placeholder="OVR" required>
+            <input type="text" id="synergy" placeholder="Synergy (optional)">
+            <input type="text" id="position" placeholder="Position(s)" required>
+            <label>Limit Break: <input type="checkbox" id="limitBreak"></label>
+            <button type="submit" class="button">Add Card</button>
+        </form>
+        <div class="card-list" id="cardList"></div>
+        <button class="button" onclick="calculateBestTeam()">Optimize Team</button>
+        <h2 id="bestFormation"></h2>
+        <div id="bestTeam"></div>
+    </div>
+    <script>
+        const formations = [["CB", "LM", "CM", "RM", "ST"], ["CB", "CB", "CM", "ST", "ST"],
+            ["CB", "CB", "CM", "LW", "RW"], ["LB", "RB", "CM", "LW", "RW"],
+            ["LB", "RB", "CM", "ST", "ST"], ["LB", "CB", "RB", "CM", "ST"],
+            ["CB", "CB", "CM", "CM", "ST"], ["CB", "CB", "LM", "RM", "ST"],
+            ["LB", "RB", "CM", "CM", "ST"], ["LB", "RB", "LM", "RM", "ST"],
+            ["CB", "CM", "LW", "ST", "RW"], ["CB", "CM", "CM", "ST", "ST"],
+            ["CB", "CM", "CM", "LW", "RW"], ["CB", "LM", "RM", "LW", "RW"],
+            ["CB", "LM", "RM", "ST", "ST"]
+];         
+        let cards = [];
+
+        document.getElementById("cardForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const name = document.getElementById("name").value;
+            const ovr = parseInt(document.getElementById("ovr").value);
+            const synergy = document.getElementById("synergy").value;
+            const position = document.getElementById("position").value.toUpperCase().split(",");
+            const limitBreak = document.getElementById("limitBreak").checked;
+
+            cards.push({ name, ovr, synergy, position, limitBreak, id: Date.now() });
+            updateCardList();
+
+            document.getElementById("cardForm").reset();
+        });
+
+        function updateCardList() {
+            const cardList = document.getElementById("cardList");
+            cardList.innerHTML = "";
+            cards.forEach(card => {
+                cardList.innerHTML += `<div class='card'>
+    ${card.name} (${card.position.join("/")}) - ${card.ovr} OVR ${card.limitBreak ? "✦" : "★"}
+    ${card.synergy ? `<div class='synergy-box'>${card.synergy}</div>` : ""}
+    <button class="remove-btn" onclick="removeCard(${card.id})">Remove</button>
+</div>`;
+            });
+        }
+
+        function calculateBestTeam() {
+	    let bestOVR = 0;
+    let bestTeam = [];
+    let bestFormation = [];
+
+    formations.forEach((formation) => {
+        let tempTeam = optimizeTeam(cards, formation);
+        
+        // Calculate synergy bonuses for this team
+        const synergyBonus = getSynergyBonus(tempTeam);
+        
+        // Calculate total OVR including synergy bonus
+        let totalOVR = tempTeam.reduce((sum, card) => sum + card.ovr, 0) + synergyBonus;
+        
+        if (totalOVR > bestOVR) {
+            bestOVR = totalOVR;
+            bestTeam = tempTeam.map(card => {
+                // Calculate individual synergy bonus for display
+                const synergyCount = tempTeam.filter(c => c.synergy === card.synergy).length;
+                const individualSynergyBonus = card.synergy ? Math.min(synergyCount - 1, 4) : 0;
+                
+                return {
+                    ...card,
+                    synergyBonus: individualSynergyBonus,
+                    totalOVR: card.ovr + individualSynergyBonus
+                };
+            });
+            bestFormation = formation;
+        }
+    });
+
+    // Display results with synergy bonuses
+    document.getElementById("bestFormation").innerText = `Best Formation: ${bestFormation.join(" - ")} | Total OVR: ${bestOVR}`;
+    document.getElementById("bestTeam").innerHTML = bestTeam.map(card => `
+        <div class='card'>
+            ${card.name} - ${card.totalOVR} OVR
+            ${card.synergy ? `<div class='synergy-box'>${card.synergy} (+${card.synergyBonus})</div>` : ""}
+        </div>
+    `).join('');
+
+        }
+	
+	function removeCard(id) {
+    cards = cards.filter(card => card.id !== id);
+    updateCardList();
+	}
+
+        function optimizeTeam(cards, formation) {
+            let team = [];
+            let availableCards = [...cards];
+            
+            formation.forEach((position) => {
+                let bestCard = availableCards.reduce((best, card) => {
+                    let adjustedOVR = getAdjustedOVR(card, position);
+                    return adjustedOVR > getAdjustedOVR(best, position) ? card : best;
+                }, availableCards[0]);
+                
+                if (bestCard) {
+                    team.push({ ...bestCard, ovr: getAdjustedOVR(bestCard, position) });
+                    availableCards = availableCards.filter(c => c !== bestCard);
+                }
+            });
+            return team;
+
+        }
+
+        function getAdjustedOVR(card, position) {
+            let baseOVR = card.ovr;
+    
+    // Handle special positions (CF, LF, RF)
+    let allowedPositions = [...card.position];
+    if (allowedPositions.includes("CF")) {
+        allowedPositions = allowedPositions.filter(p => p !== "CF").concat(["CB", "CM", "ST"]);
+    }
+    if (allowedPositions.includes("LF")) {
+        allowedPositions = allowedPositions.filter(p => p !== "LF").concat(["LW", "LM", "LB"]);
+    }
+    if (allowedPositions.includes("RF")) {
+        allowedPositions = allowedPositions.filter(p => p !== "RF").concat(["RW", "RM", "RB"]);
+    }
+    
+    // Determine line bonuses
+    const defensiveLine = ["LB", "CB", "RB"];
+    const midfieldLine = ["LM", "CM", "RM"];
+    const forwardLine = ["LW", "ST", "RW"];
+    
+    const getLine = (pos) => {
+        if (defensiveLine.includes(pos)) return "defensive";
+        if (midfieldLine.includes(pos)) return "midfield";
+        if (forwardLine.includes(pos)) return "forward";
+        return "";
+    };
+    
+    // Check if position is in allowed positions
+    if (allowedPositions.includes(position)) {
+        baseOVR += 6; // Correct position bonus
+    } else {
+        // Check if position is in same line
+        const positionLine = getLine(position);
+        const cardLines = new Set();
+        allowedPositions.forEach(p => cardLines.add(getLine(p)));
+        
+        if (cardLines.has(positionLine)) {
+            // Same line - no change
+        } else {
+            // Different line - penalty
+            baseOVR -= 6;
+        }
+    }
+    
+    // Apply limit break bonus
+    if (card.limitBreak) {
+        baseOVR += 3;
+    }
+    
+    return baseOVR;
+
+        }
+
+        function getSynergyBonus(team) {
+           const synergyCounts = {};
+    team.forEach(card => {
+        if (card.synergy) {
+            synergyCounts[card.synergy] = (synergyCounts[card.synergy] || 0) + 1;
+        }
+    });
+
+    // Calculate total synergy bonus for the team
+    let totalSynergyBonus = 0;
+    team.forEach(card => {
+        if (card.synergy && synergyCounts[card.synergy] > 1) {
+            // Each player gets +1 for each other player with same synergy
+            // (2 players = +1 each, 3 players = +2 each, etc.)
+            totalSynergyBonus += Math.min(synergyCounts[card.synergy] - 1, 4);
+        }
+    });
+    
+    return totalSynergyBonus;
+   }
+ </script>
+</body>
+</html>
