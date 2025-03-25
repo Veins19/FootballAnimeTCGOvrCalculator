@@ -59,6 +59,7 @@
             <input type="text" id="position" placeholder="Position(s)" required>
             <label>Limit Break: <input type="checkbox" id="limitBreak"></label>
             <button type="submit" class="button">Add Card</button>
+	    <button onclick="clearStorage()" class="button">Reset All Cards</button>
         </form>
         <div class="card-list" id="cardList"></div>
         <button class="button" onclick="calculateBestTeam()">Optimize Team</button>
@@ -76,7 +77,14 @@
             ["CB", "LM", "RM", "ST", "ST"]
 ];         
         let cards = [];
-
+	// 🔥 Load saved cards on startup
+	document.addEventListener('DOMContentLoaded', () => {
+  	const savedCards = localStorage.getItem('savedCards');
+ 	 if (savedCards) {
+  	  cards = JSON.parse(savedCards);
+ 	   updateCardList(); // Refresh the UI
+	  }
+	});
         document.getElementById("cardForm").addEventListener("submit", function(event) {
             event.preventDefault();
             const name = document.getElementById("name").value;
@@ -101,6 +109,7 @@
     <button class="remove-btn" onclick="removeCard(${card.id})">Remove</button>
 </div>`;
             });
+		localStorage.setItem('savedCards', JSON.stringify(cards));
         }
 
         function calculateBestTeam() {
@@ -242,11 +251,10 @@
     
     return totalSynergyBonus;
    }
-	// Save cards
-localStorage.setItem('savedCards', JSON.stringify(cards));
-// Load on startup
-if (localStorage.getItem('savedCards')) {
-  cards = JSON.parse(localStorage.getItem('savedCards'));
+	function clearStorage() {
+  localStorage.removeItem('savedCards');
+  cards = []; // Clear current cards
+  updateCardList(); // Refresh UI
 }
  </script>
 </body>
