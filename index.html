@@ -20,6 +20,17 @@
     font-size: 12px;
     cursor: pointer;
 	}
+	.team-saves {
+    margin: 15px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.team-saves button {
+    padding: 8px;
+    font-size: 14px;
+}
         .card { border: 1px solid #ccc; padding: 10px; margin: 5px; position: relative; }
         .button { padding: 10px; margin: 5px; cursor: pointer; }
         .synergy-box { position: absolute; top: 5px; right: 5px; background: lightblue; padding: 3px; border-radius: 5px; font-size: 12px; }
@@ -34,8 +45,7 @@
     font-size: 16px; /* Larger tap targets */
     padding: 8px;
     margin: 4px 0;
-  }
-  
+  } 
   .card {
     padding: 15px;
   }
@@ -65,6 +75,16 @@
         <button class="button" onclick="calculateBestTeam()">Optimize Team</button>
         <h2 id="bestFormation"></h2>
         <div id="bestTeam"></div>
+    </div>
+    <div class="team-saves">
+    <button onclick="saveTeam(1)" class="button">Save Team 1</button>
+    <button onclick="loadTeam(1)" class="button">Load Team 1</button>
+    
+    <button onclick="saveTeam(2)" class="button">Save Team 2</button>
+    <button onclick="loadTeam(2)" class="button">Load Team 2</button>
+    
+    <button onclick="saveTeam(3)" class="button">Save Team 3</button>
+    <button onclick="loadTeam(3)" class="button">Load Team 3</button>
     </div>
     <script>
         const formations = [["CB", "LM", "CM", "RM", "ST"], ["CB", "CB", "CM", "ST", "ST"],
@@ -111,6 +131,24 @@
             });
 		localStorage.setItem('savedCards', JSON.stringify(cards));
         }
+	function updateSaveStatus() {
+    const slots = [1, 2, 3];
+    slots.forEach(slot => {
+        const saveData = localStorage.getItem(`savedTeam_${slot}`);
+        const button = document.querySelector(`button[onclick="loadTeam(${slot})"]`);
+        if (saveData) {
+            const timestamp = JSON.parse(saveData).timestamp;
+            button.textContent = `Load Team ${slot} (${timestamp})`;
+            button.style.backgroundColor = '#4CAF50'; // Green = has data
+        } else {
+            button.textContent = `Load Team ${slot} (Empty)`;
+            button.style.backgroundColor = '#f44336'; // Red = empty
+        }
+    });
+}
+
+// Call this at the end of updateCardList()
+updateSaveStatus();
 
         function calculateBestTeam() {
 	    let bestOVR = 0;
@@ -158,6 +196,41 @@
     cards = cards.filter(card => card.id !== id);
     updateCardList();
 	}
+	// Save team to a slot (1-3)
+function saveTeam(slot) {
+    if (cards.length === 0) {
+        alert("No cards to save!");
+        return;
+    }
+    
+    const teamData = {
+        cards: cards,
+        timestamp: new Date().toLocaleString()
+    };
+    
+    localStorage.setItem(`savedTeam_${slot}`, JSON.stringify(teamData));
+    alert(`Team saved to Slot ${slot} at ${teamData.timestamp}`);
+}
+
+// Load team from a slot (1-3)
+function loadTeam(slot) {
+    const savedData = localStorage.getItem(`savedTeam_${slot}`);
+    if (!savedData) {
+        alert(`No team found in Slot ${slot}`);
+        return;
+    }
+    
+    const teamData = JSON.parse(savedData);
+    cards = teamData.cards;
+    updateCardList();
+    alert(`Team loaded from Slot ${slot} (Saved: ${teamData.timestamp})`);
+}
+
+// Clear a specific slot
+function clearTeamSlot(slot) {
+    localStorage.removeItem(`savedTeam_${slot}`);
+    alert(`Cleared Slot ${slot}`);
+}
 
         function optimizeTeam(cards, formation) {
     let team = [];
