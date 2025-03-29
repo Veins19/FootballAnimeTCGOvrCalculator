@@ -234,43 +234,79 @@ function clearTeamSlot(slot) {
 }
 
         function optimizeTeam(cards, formation) {
-    let team = [];
-    let availableCards = [...cards];
+    return cards.length <= 15 ? 
+        tournamentOptimize(cards, formation) : 
+        beamSearchOptimize(cards, formation);
+}
+
+// Your tournament-style optimizer (best for ≤15 cards)
+function tournamentOptimize(cards, formation) {
+    const allPermutations = getPermutations(cards, 5);
+    const groupSize = 10;
+    let currentRound = allPermutations;
     
-    // 1. Create all possible 5-card permutations
-    const permutations = getPermutations(availableCards, 5);
-    
-    // 2. Find the permutation with highest OVR in this formation
-    let bestTeam = [];
-    let maxOVR = -Infinity;
-    
-    permutations.forEach(permutation => {
-        let teamOVR = 0;
-        const tempTeam = [];
-        
-        // Calculate total OVR for this permutation
-        for (let i = 0; i < 5; i++) {
-            const position = formation[i];
-            const card = permutation[i];
-            const adjustedOVR = getAdjustedOVR(card, position);
-            teamOVR += adjustedOVR;
-            tempTeam.push({ ...card, position, ovr: adjustedOVR });
+    while (currentRound.length > 1) {
+        const nextRound = [];
+        for (let i = 0; i < currentRound.length; i += groupSize) {
+            const group = currentRound.slice(i, i + groupSize);
+            nextRound.push(evaluateGroup(group, formation));
         }
-        
-        // Add synergy bonuses
+        currentRound = nextRound;
+    }
+    return currentRound[0] || [];
+}
+
+// My beam search optimizer (best for >15 cards)
+function beamSearchOptimize(cards, formation) {
+    const positionCandidates = formation.map(pos => 
+        cards.map(card => ({ card, score: getAdjustedOVR(card, pos) }))
+             .sort((a, b) => b.score - a.score)
+    );
+
+    let beam = [{ team: [], used: new Set(), ovr: 0 }];
+    
+    formation.forEach((_, idx) => {
+        const newBeam = [];
+        beam.forEach(state => {
+            positionCandidates[idx].slice(0, 20).forEach(({ card, score }) => {
+                if (!state.used.has(card)) {
+                    newBeam.push({
+                        team: [...state.team, { ...card, position: formation[idx], ovr: score }],
+                        used: new Set(state.used).add(card),
+                        ovr: state.ovr + score
+                    });
+                }
+            });
+        });
+        beam = newBeam.sort((a, b) => b.ovr - a.ovr).slice(0, 20);
+    });
+
+    return beam.map(state => ({
+        ...state,
+        ovr: state.ovr + getSynergyBonus(state.team)
+    })).sort((a, b) => b.ovr - a.ovr)[0]?.team || [];
+}
+
+// Shared helper functions
+function evaluateGroup(permutations, formation) {
+    let bestTeam = [], maxOVR = -Infinity;
+    permutations.forEach(permutation => {
+        const tempTeam = [];
+        let teamOVR = 0;
+        for (let i = 0; i < 5; i++) {
+            const adjustedOVR = getAdjustedOVR(permutation[i], formation[i]);
+            tempTeam.push({ ...permutation[i], position: formation[i], ovr: adjustedOVR });
+            teamOVR += adjustedOVR;
+        }
         teamOVR += getSynergyBonus(tempTeam);
-        
-        // Track best team
         if (teamOVR > maxOVR) {
             maxOVR = teamOVR;
             bestTeam = tempTeam;
         }
     });
-    
     return bestTeam;
 }
 
-// Helper function to generate permutations
 function getPermutations(arr, size) {
     const result = [];
     function permute(temp, remaining) {
@@ -280,7 +316,7 @@ function getPermutations(arr, size) {
         }
         for (let i = 0; i < remaining.length; i++) {
             permute(
-                [...temp, remaining[i]],
+                [...temp, remaining[i]], 
                 [...remaining.slice(0, i), ...remaining.slice(i + 1)]
             );
         }
