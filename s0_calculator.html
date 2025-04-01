@@ -237,7 +237,6 @@
                 cardList.innerHTML += `<div class='card'>
     ${card.name} (${card.position.join("/")}) - ${card.ovr} OVR ${card.limitBreak ? "✦" : "★"}
     ${card.synergy ? `<div class='synergy-box'>${card.synergy}</div>` : ""}
-    <h6> </h6>
     <button class="remove-btn" onclick="removeCard(${card.id})">Remove</button>
 </div>`;
             });
