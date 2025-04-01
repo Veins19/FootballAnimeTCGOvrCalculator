@@ -61,10 +61,14 @@
         }
 
         button {
-            background: #4a90e2;
+            padding: 20px 40px;
+            font-size: 1.2rem;
+            margin: 20px;
+            background-color: #4caf50;
             color: white;
-            cursor: pointer;
             border: none;
+            border-radius: 10px;
+            cursor: pointer;
         }
 
         button:hover {
@@ -168,6 +172,7 @@
         <h4>1. If the card is merged (e.g., 91(+6)), just write 97 in the OVR box.</h4>
         <h4>2. Ignore the Limit Break checkbox; if limit broken to +18, just input in the OVR box.</h4>
         <h4>3. Added 3 new save slots. Refresh the browser after saving to see changes!</h4>
+	<button class="button" onclick="window.location.href='index.html'">Back to Home</button>
 
         <form id="cardForm">
             <input type="text" id="name" placeholder="Card Name" required>
