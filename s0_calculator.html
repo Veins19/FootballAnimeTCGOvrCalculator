@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,37 +8,40 @@
         /* Global Styles */
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #E3FDFD, #A6E3E9);
+            background: linear-gradient(135deg, #0a0f24, #1c2541);
             margin: 0;
             padding: 0;
-            color: #333;
+            color: #ffffff;
         }
 
         .container {
             max-width: 750px;
             margin: 30px auto;
-            background: white;
+            background: rgba(10, 15, 36, 0.85);
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 5px 10px rgba(0, 255, 255, 0.4);
             transition: transform 0.3s ease;
         }
 
         .container:hover {
             transform: scale(1.02);
         }
-	.btncenter {
-	    text-align: center;
-	}
+
+        .btncenter {
+            text-align: center;
+        }
+
         h1 {
-            color: #004D40;
+            color: #a0c4ff;
             text-align: center;
             margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
         }
 
         h4 {
             font-size: 14px;
-            color: #555;
+            color: #80aaff;
             text-align: center;
         }
 
@@ -50,10 +53,12 @@
 
         input[type="text"], input[type="number"], button {
             padding: 12px;
-            border: 1px solid #ccc;
+            border: 1px solid #0077ff;
             border-radius: 8px;
             font-size: 14px;
             transition: background 0.3s ease, box-shadow 0.3s ease;
+            background: rgba(10, 15, 36, 0.85);
+            color: white;
         }
 
         input:focus, button:focus {
@@ -62,14 +67,21 @@
         }
 
         button {
-            background: #00897B;
+            background: linear-gradient(90deg, #0077ff, #00c8ff);
             color: white;
             cursor: pointer;
             border: none;
+            transition: 0.3s ease-in-out;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
         }
 
         button:hover {
-            background: #00796B;
+            background: linear-gradient(90deg, #0055cc, #0099ff);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        button:active {
+            background: linear-gradient(90deg, #0044aa, #0088cc);
         }
 
         .card-list {
@@ -79,17 +91,17 @@
         }
 
         .card {
-            background: #f9f9f9;
+            background: #1c2541;
             border-radius: 10px;
             padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 255, 255, 0.3);
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 8px rgba(0, 255, 255, 0.4);
         }
 
         .synergy-box {
