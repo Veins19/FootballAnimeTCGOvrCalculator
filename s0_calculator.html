@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,30 +8,32 @@
         /* Global Styles */
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f0f4f8, #d9e3f0);
+            background: linear-gradient(135deg, #E3FDFD, #A6E3E9);
             margin: 0;
             padding: 0;
             color: #333;
         }
 
         .container {
-            max-width: 700px;
-            margin: 20px auto;
+            max-width: 750px;
+            margin: 30px auto;
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
             transition: transform 0.3s ease;
         }
 
         .container:hover {
             transform: scale(1.02);
         }
-
+	.btncenter {
+	    text-align: center;
+	}
         h1 {
-            color: #2c3e50;
+            color: #004D40;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         h4 {
@@ -40,7 +42,6 @@
             text-align: center;
         }
 
-        /* Form Styles */
         form {
             display: grid;
             gap: 12px;
@@ -61,34 +62,16 @@
         }
 
         button {
-            background: #4a90e2;
-             color: white;
-             cursor: pointer;
-             border: none;
+            background: #00897B;
+            color: white;
+            cursor: pointer;
+            border: none;
         }
 
         button:hover {
-            background: #357ab8;
+            background: #00796B;
         }
 
-        .remove-btn {
-            background: #e74c3c;
-            color: white;
-            padding: 4px 8px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            position: absolute;
-            bottom: 3px;
-            right: 3px;
-            transition: background 0.3s ease;
-        }
-
-        .remove-btn:hover {
-            background: #c0392b;
-        }
-
-        /* Card Styles */
         .card-list {
             display: grid;
             gap: 10px;
@@ -110,7 +93,7 @@
         }
 
         .synergy-box {
-            background: #85c1ae;
+            background: #43A047;
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
@@ -120,26 +103,25 @@
             right: 5px;
         }
 
-        /* Team Save Buttons */
-        .team-saves {
+        .save-load-container {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
             margin-top: 20px;
         }
 
-        .team-saves button {
-            background: #2ecc71;
+        .save-load-container button {
+            background: #FF9800;
             color: white;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 6px;
-            transition: background 0.3s ease;
         }
 
-        .team-saves button:hover {
-            background: #27ae60;
+        .save-load-container button:hover {
+            background: #FB8C00;
         }
 
-        /* Responsive Design */
         @media (max-width: 600px) {
             .container {
                 padding: 15px;
@@ -154,24 +136,21 @@
             .card {
                 padding: 12px;
             }
-
-            .team-saves button {
-                padding: 8px 10px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Football Anime TCG OVR Calculator</h1>
-        <h4>Note:</h4>
+	<h4>Note:</h4>
         <h4>1. If the card is merged (e.g., 91(+6)), just write 97 in the OVR box.</h4>
         <h4>2. Ignore the Limit Break checkbox; if limit broken to +18, just input in the OVR box.</h4>
         <h4>3. Added 3 new save slots. Refresh the browser after saving to see changes!</h4>
-	<h4> </h4>
-	<button class="button" onclick="window.location.href='index.html'">Back to Home</button>
-	<h4> </h4>
-
+        <h4>Enter details below and build your team.</h4>
+	<div class="btncenter">
+		<button class="button" onclick="window.location.href='index.html'">Back to Home</button>
+		<h4> </h4>
+	</div>
         <form id="cardForm">
             <input type="text" id="name" placeholder="Card Name" required>
             <input type="number" id="ovr" placeholder="OVR" required>
@@ -181,21 +160,21 @@
             <button type="submit">Add Card</button>
             <button type="button" onclick="clearStorage()">Reset All Cards</button>
         </form>
-
+	
         <div class="card-list" id="cardList"></div>
-	<h5> </h5>
+        <h4> </h4>
         <button onclick="calculateBestTeam()">Optimize Team</button>
         <h2 id="bestFormation"></h2>
         <div id="bestTeam"></div>
     </div>
 
-    <div class="team-saves">
-        <button onclick="saveTeam(1)">Save Team 1</button>
-        <button onclick="loadTeam(1)">Load Team 1</button>
-        <button onclick="saveTeam(2)">Save Team 2</button>
-        <button onclick="loadTeam(2)">Load Team 2</button>
-        <button onclick="saveTeam(3)">Save Team 3</button>
-        <button onclick="loadTeam(3)">Load Team 3</button>
+    <div class="save-load-container">
+        <button onclick="saveTeam(1)">Save Slot 1</button>
+        <button onclick="loadTeam(1)">Load Slot 1</button>
+        <button onclick="saveTeam(2)">Save Slot 2</button>
+        <button onclick="loadTeam(2)">Load Slot 2</button>
+        <button onclick="saveTeam(3)">Save Slot 3</button>
+        <button onclick="loadTeam(3)">Load Slot 3</button>
     </div>
     <script>
         const formations = [["CB", "LM", "CM", "RM", "ST"], ["CB", "CB", "CM", "ST", "ST"],
